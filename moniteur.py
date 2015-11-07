@@ -69,7 +69,9 @@ def create_infraction_dicts():
 def close_resolved_cases(session_infraction_id_list):
 
     """
-    Close resolved cases. A case is 'resolved' when...
+    Close resolved cases. An open case is 'resolved' when there is no "new"
+    infraction in the current moniteur session with the same infraction
+    type and object_id.
 
     Parameters
     ----------
@@ -79,8 +81,8 @@ def close_resolved_cases(session_infraction_id_list):
 
     """
 
-    # Get all open cases.
-    open_cases = Case.objects.filter(~Q(state='closed')).select_related()
+    # Get all open cases for enabled infraction types.
+    open_cases = Case.objects.filter(~Q(state='closed'), infraction__infraction_type__enabled=True).select_related()
 
     # Check each case for a related infraction in current_infraction_id_list.
     for case in open_cases:
@@ -386,19 +388,6 @@ def auth(cmd):
 # =================================================
 # EXECUTE FROM COMMAND LINE
 # -------------------------------------------------
-
-def createtables():
-
-    # Get .sql file that containes CREATE statements.
-    fd = open('data/create_tables.sql', 'r')
-    sql = fd.read()
-
-    # Create DB connection cursor.
-    cursor = connection.cursor()
-
-    # Execute the SQL to create database tables.
-    cursor.execute(sql)
-
 
 if __name__ == "__main__":
 
